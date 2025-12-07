@@ -1,0 +1,65 @@
+.stats-row {
+    display: flex;
+    gap: 16px;
+    /* Smaller gap */
+    margin-bottom: 24px;
+}
+
+.stat-card {
+    background-color: var(--bg-white);
+    padding: 16px 20px;
+    border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    /* Subtle shadow */
+    min-width: 220px;
+    border: 1px solid #E5E7EB;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.stat-card.highlight {
+    border-color: #E9D5FF;
+    /* Light purple border */
+    background-color: #FAFAFA;
+    /* Keeps white bg mostly but check image. Image has white bg with purple border or shadow? Looks like white bg with purple text highlight on active? */
+    /* Looking at image: The "Total Discount" card has a purple border/shadow effect? No, it has a purple number and pill-like highlight. Wait, the image shows "Total Discount" number is PURPLE. And "10" and "89,000" are BLACK. */
+    /* The active button "Intake" is purple. */
+    /* Let's replicate exact text colors. */
+    /* The stats cards themselves are white. "Total Discount" text is black, but value in image: "15000" is purple background? No, selected text highlight in screenshot. */
+    /* Wait, the user highlighted "Total Discount" in the screenshot with a purple box annotation? No, that's a text selection highlight or annotation. */
+    /* Ah, looking at the first image "Main screen", the "Total Discount" card has a purple outline or shadow? Actually, it looks like just a card. */
+    /* But the value inside "Total Discount" is highlighted with a purple rectangle. That might be the user selection in the screenshot tool or a UI element? */
+    /* I will assume standard card style but maybe make the Value purple for discount if it's special. */
+}
+
+/* Let's stick to clean cards. */
+
+.stat-label {
+    font-size: 13px;
+    color: #6B7280;
+    /* Gray-500 */
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+}
+
+.stat-value {
+    font-size: 24px;
+    /* Larger */
+    font-weight: 700;
+    color: #111827;
+    /* Black */
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+}
+
+.stat-sub {
+    font-size: 13px;
+    color: #6B7280;
+    font-weight: 500;
+}

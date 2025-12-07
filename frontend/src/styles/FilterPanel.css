@@ -1,0 +1,92 @@
+.filter-panel-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    background-color: transparent;
+    /* Transparent bg as per image which merges with body */
+    padding: 0;
+    box-shadow: none;
+    border: none;
+    flex-wrap: wrap;
+    /* Handle smaller screens */
+    gap: 16px;
+}
+
+.filters-left {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.refresh-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    /* Circle */
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    transition: background-color 0.2s;
+    color: #374151;
+}
+
+.refresh-btn:hover {
+    background-color: #E5E7EB;
+}
+
+.filters-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Figma Pill/Rounded Style */
+.filter-dropdown,
+.filter-date {
+    height: 36px;
+    padding: 0 16px;
+    border: none;
+    /* No border initially, looks like light gray bg */
+    background-color: #F3F4F6;
+    /* Gray-100 */
+    border-radius: 6px;
+    /* Slightly rounded */
+    font-size: 13px;
+    font-weight: 500;
+    color: #4B5563;
+    /* Gray-600 */
+    cursor: pointer;
+    outline: none;
+}
+
+.filter-dropdown:hover,
+.filter-date:hover {
+    background-color: #E5E7EB;
+    /* Gray-200 */
+}
+
+.filter-date {
+    width: auto;
+    color: #4B5563;
+}
+
+.sort-label {
+    font-size: 13px;
+    color: #6B7280;
+}
+
+.sort-dropdown {
+    border: none;
+    background-color: transparent;
+    font-size: 13px;
+    font-weight: 500;
+    color: #111827;
+    cursor: pointer;
+    outline: none;
+}
