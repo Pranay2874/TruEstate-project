@@ -29,11 +29,6 @@ A specialized internal tool for managing retail sales data. It features a high-p
 - "Next/Previous" and Page Number navigation fully supported.
 
 ## 7. Setup Instructions
-
-### Prerequisites
-- Node.js (v14+)
-- MongoDB (Local or Atlas) running on `localhost:27017`
-
 ### Steps
 1. **Clone & Install**:
    ```bash
