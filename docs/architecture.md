@@ -4,17 +4,17 @@
 I built the backend using **Node.js** and **Express**. I chose a **Layered Architecture** because it keeps the code organized and easy to debug.
 
 ### Folder Structure
-*   `src/index.js` - This is where the app starts and DB connection happens.
+*   `src/index.js` - This is where the app starts.
 *   `src/routes` - I separated the routes to keep `index.js` clean.
 *   `src/controllers` - All the logic for sorting, filtering, and stats lives here.
-*   `src/models` - The Mongoose schema.
+*   `src/config` - Supabase client configuration.
 *   `src/utils` - I put the CSV seeder script here.
 
 ### How Data Flows
 1.  **Request**: When you change a filter on the frontend, it sends a GET request.
 2.  **Controller**: I check `req.query` for things like `search` or `minAge`.
-3.  **Query Building**: I build a MongoDB query object dynamically. For example, if you search "John", I add a regex to the query.
-4.  **Aggregation**: For the top stats bar, I run an aggregation pipeline on the *same query* so the stats match the table exactly.
+3.  **Query Building**: I build Supabase queries dynamically using the JavaScript client. For example, if you search "John", I use `.ilike()` for case-insensitive matching.
+4.  **Stats Calculation**: For the top stats bar, I query the same filtered dataset to calculate totals, so the stats match the table exactly.
 
 ---
 
@@ -38,6 +38,7 @@ I decided to stick with simple **React Context / State** in `App.jsx` because Re
 | Decision | Why? |
 | :--- | :--- |
 | **Vanilla CSS** | To keep the bundle size small and demonstrate CSS skills. |
-| **MongoDB Aggregations** | I wanted the stats (Total Amount) to be 100% accurate across all pages, not just the one being viewed. |
+| **Supabase (PostgreSQL)** | I wanted a cloud-hosted, production-ready database with built-in APIs and real-time capabilities. |
+| **Normalized Schema** | I designed separate tables (customers, products, stores, employees, sales) for data integrity and efficient querying. |
 | **Custom Seeder** | The dataset was too big for a simple JSON import, so I wrote a stream-based parser. |
 

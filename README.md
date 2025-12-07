@@ -7,7 +7,7 @@ I decided to go with a tech stack I'm comfortable with but also one that allows 
 - **Frontend**: React (Vite) - *Fast and lightweight.*
 - **Styling**: Vanilla CSS - *I wanted full control over the design variables without relying on frameworks like Tailwind for this specific task.*
 - **Backend**: Node.js & Express - *Robust and easy to handle extensive API logic.*
-- **Database**: MongoDB - *Perfect for handling the flexible schema of the provided dataset.*
+- **Database**: Supabase (PostgreSQL) - *Cloud-hosted, scalable, and perfect for production deployment.*
 
 ## Features & How It Works
 
@@ -19,7 +19,7 @@ The filters are dynamic. You can combine multiple filters like `Region` + `Gende
 *   *Challenge*: The Age filter was tricky because of ranges like "18-25". I handled this in the `App.jsx` handler first, then sent `minAge`/`maxAge` to the backend to keep the query clean.
 
 ### 3. Accurate Stats
-Instead of calculating stats on the frontend (which would only show the *current page's* stats), I wrote a MongoDB Aggregation pipeline. This way, the "Total Amount" and "Total Discount" reflect the **entire filtered dataset**, not just the 10 rows you see.
+Instead of calculating stats on the frontend (which would only show the *current page's* stats), I query the entire filtered dataset on the backend. This way, the "Total Amount" and "Total Discount" reflect the **entire filtered dataset**, not just the 10 rows you see.
 
 ### 4. Custom Data Seeder
 The CSV dataset was huge (100k+ records). I wrote a custom seeder script using streams to parse it line-by-line and insert it in chunks of 5000. This avoids crashing Node.js with memory errors.
@@ -30,7 +30,7 @@ The CSV dataset was huge (100k+ records). I wrote a custom seeder script using s
 
 ### Prerequisites
 - Node.js installed.
-- MongoDB running locally on port `27017`.
+- Supabase account (free tier works fine).
 
 ### Getting Started
 

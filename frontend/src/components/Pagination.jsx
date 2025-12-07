@@ -3,13 +3,11 @@ import '../styles/Pagination.css';
 
 const Pagination = ({ current, total, onPageChange }) => {
 
-    // Generate page numbers to display
     const paginationRange = () => {
         const totalPageCount = total;
         const siblingCount = 1;
-        const totalPageNumbers = siblingCount + 5; // sibling + current + first + last + dots...
+        const totalPageNumbers = siblingCount + 5;
 
-        // Case 1: If the number of pages is less than the page numbers we want to show in our Component, return the range [1..totalPageCount]
         if (totalPageNumbers >= totalPageCount) {
             return range(1, totalPageCount);
         }
@@ -23,21 +21,18 @@ const Pagination = ({ current, total, onPageChange }) => {
         const firstPageIndex = 1;
         const lastPageIndex = totalPageCount;
 
-        // Case 2: No left dots to show, but rights dots to be shown
         if (!shouldShowLeftDots && shouldShowRightDots) {
             let leftItemCount = 3 + 2 * siblingCount;
             let leftRange = range(1, leftItemCount);
             return [...leftRange, '...', totalPageCount];
         }
 
-        // Case 3: No right dots to show, but left dots to be shown
         if (shouldShowLeftDots && !shouldShowRightDots) {
             let rightItemCount = 3 + 2 * siblingCount;
             let rightRange = range(totalPageCount - rightItemCount + 1, totalPageCount);
             return [firstPageIndex, '...', ...rightRange];
         }
 
-        // Case 4: Both left and right dots to be shown
         if (shouldShowLeftDots && shouldShowRightDots) {
             let middleRange = range(leftSiblingIndex, rightSiblingIndex);
             return [firstPageIndex, '...', ...middleRange, '...', lastPageIndex];
@@ -73,10 +68,7 @@ const Pagination = ({ current, total, onPageChange }) => {
                     <button
                         key={p}
                         className={`page-btn ${current === p ? 'active' : ''}`}
-                        onClick={() => {
-                            console.log('Clicked page:', p);
-                            onPageChange(p);
-                        }}
+                        onClick={() => onPageChange(p)}
                     >
                         {p}
                     </button>
