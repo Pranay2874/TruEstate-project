@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { fetchFilterOptions } from '../services/api';
 import '../styles/FilterPanel.css';
+import RefreshIcon from '../icons/RefreshIcon';
 
 const FilterPanel = ({ onFilter, onSort }) => {
     const [options, setOptions] = useState({
@@ -67,7 +68,7 @@ const FilterPanel = ({ onFilter, onSort }) => {
         <div className="filter-panel-container">
             <div className="filters-left">
                 <button className="refresh-btn" title="Reset Filters" onClick={() => window.location.reload()}>
-                    ↻
+                    <RefreshIcon />
                 </button>
 
                 <select className="filter-dropdown" onChange={(e) => handleChange('customerRegion', e.target.value)}>
@@ -105,7 +106,7 @@ const FilterPanel = ({ onFilter, onSort }) => {
                     onChange={(e) => handleChange('startDate', e.target.value)}
                     placeholder="Date"
                 />
-            </div>
+            </div >
 
             <div className="filters-right">
                 <span className="sort-label">Sort by:</span>
@@ -121,7 +122,7 @@ const FilterPanel = ({ onFilter, onSort }) => {
                     <option value="quantity-asc">Quantity (Low-High)</option>
                 </select>
             </div>
-        </div>
+        </div >
     );
 };
 
