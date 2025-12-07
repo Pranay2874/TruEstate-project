@@ -4,7 +4,7 @@
 A specialized internal tool for managing retail sales data. It features a high-performance backend capable of handling 100,000+ records and a premium, responsive React frontend with advanced Search, Filtering, Sorting, and Pagination capabilities to retrieve insights instantly.
 
 ## 2. Tech Stack
-- **Frontend**: React (Vite), Tailwind CSS.
+- **Frontend**: React (Vite), CSS.
 - **Backend**: Node.js, Express.js.
 - **Database**: MongoDB (Mongoose).
 - **Tools**: VS Code, Postman.
