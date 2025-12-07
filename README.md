@@ -1,71 +1,63 @@
-# Retail Sales Management System
+# Retail Sales Management System (TruEstate Assignment)
 
-## 1. Overview
-A specialized internal tool for managing retail sales data. It features a high-performance backend capable of handling 100,000+ records and a premium, responsive React frontend with advanced Search, Filtering, Sorting, and Pagination capabilities to retrieve insights instantly.
+Hi, this is **Pranay Pillutla**. This is my submission for the Full Stack Intern assignment. I've built a dashboard to manage retail sales data, focusing on performance and a clean, premium UI.
 
-## 2. Tech Stack
-- **Frontend**: React (Vite), Vanilla CSS (Modular, CSS Variables).
-- **Backend**: Node.js, Express.js.
-- **Database**: MongoDB (Mongoose).
-- **Tools**: VS Code, Postman.
+## Tech Stack Choices
+I decided to go with a tech stack I'm comfortable with but also one that allows for scalability:
+- **Frontend**: React (Vite) - *Fast and lightweight.*
+- **Styling**: Vanilla CSS - *I wanted full control over the design variables without relying on frameworks like Tailwind for this specific task.*
+- **Backend**: Node.js & Express - *Robust and easy to handle extensive API logic.*
+- **Database**: MongoDB - *Perfect for handling the flexible schema of the provided dataset.*
 
-## 3. Search Implementation Summary
-- **Backend**: Implemented using MongoDB `$or` regex queries for case-insensitive partial matching on `Customer Name` and `Phone Number`. Text indexes are used for performance optimization.
-- **Frontend**: Debounced search input ensures smooth user experience without spamming API calls.
+## Features & How It Works
 
-## 4. Filter Implementation Summary
-- **Multi-Select**: Supports filtering by multiple values (e.g., Region, Category) using `$in` operator.
-- **Range Filters**: Age and Date filters use `$gte` and `$lte` operators.
-- **Dynamic**: Filters can be combined arbitrarily (e.g., "Female" customers in "North" region buying "Electronics").
+### 1. Robust Search
+I implemented the search logic on the backend using regex. It checks both `Customer Name` and `Phone Number`. I added a **debounce** on the frontend (500ms) so we don't spam the API while typing.
 
-## 5. Sorting Implementation Summary
-- Supports sorting by Date, Quantity, and Customer Name.
-- Preserves active search and filter states.
-- Implemented via `.sort()` cursor modifier in MongoDB.
+### 2. Smart Filtering
+The filters are dynamic. You can combine multiple filters like `Region` + `Gender`.
+*   *Challenge*: The Age filter was tricky because of ranges like "18-25". I handled this in the `App.jsx` handler first, then sent `minAge`/`maxAge` to the backend to keep the query clean.
 
-## 6. Pagination Implementation Summary
-- Server-side pagination using `skip` and `limit`.
-- Returns metadata (`totalPages`, `currentPage`) to generate frontend controls.
-- "Next/Previous" and Page Number navigation fully supported.
+### 3. Accurate Stats
+Instead of calculating stats on the frontend (which would only show the *current page's* stats), I wrote a MongoDB Aggregation pipeline. This way, the "Total Amount" and "Total Discount" reflect the **entire filtered dataset**, not just the 10 rows you see.
 
-## 7. Setup Instructions
+### 4. Custom Data Seeder
+The CSV dataset was huge (100k+ records). I wrote a custom seeder script using streams to parse it line-by-line and insert it in chunks of 5000. This avoids crashing Node.js with memory errors.
+
+---
+
+## Setup Instructions
 
 ### Prerequisites
-- Node.js (v14+)
-- MongoDB (Local or Atlas) running on `localhost:27017`
+- Node.js installed.
+- MongoDB running locally on port `27017`.
 
-### Steps
-1. **Clone & Install**:
-   ```bash
-   # Root directory
-   npm install # (if needed)
-   
-   cd backend
-   npm install
-   
-   cd ../frontend
-   npm install
-   ```
+### Getting Started
 
-2. **Data Setup**:
-   - Ensure MongoDB is running.
-   - Place `truestate_assignment_dataset.csv` in `backend/data/`.
-   - Run Seeder:
-     ```bash
-     cd backend
-     npm run seed
-     ```
+1.  **Install Dependencies**
+    I split the project into `backend` and `frontend`. You need to install packages for both:
+    ```bash
+    cd backend
+    npm install
 
-3. **Run Application**:
-   - **Backend**:
-     ```bash
-     cd backend
-     npm start 
-     # Server: http://localhost:5000
-     ```
-   - **Frontend**:
-     ```bash
-     cd frontend
-     npm run dev
-     # Client: http://localhost:5173
-     ```
+    cd ../frontend
+    npm install
+    ```
+
+2.  **Seed the Database**
+    Make sure the CSV file is in `backend/data/`. Then run:
+    ```bash
+    cd backend
+    npm run seed
+    ```
+    *(This might take a few seconds as it processes the large file).*
+
+3.  **Run the App**
+    Start both servers:
+    *   Backend (Port 5000): `npm start` (inside backend folder)
+    *   Frontend (Port 5173): `npm run dev` (inside frontend folder)
+
+    Open [http://localhost:5173](http://localhost:5173) to view the dashboard.
+
+---
+*Built by Pranay Pillutla.*
