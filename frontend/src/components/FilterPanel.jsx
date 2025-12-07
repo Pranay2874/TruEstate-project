@@ -34,7 +34,6 @@ const FilterPanel = ({ onFilter, onSort }) => {
     const handleChange = (key, value) => {
         let newFilters = { ...filters, [key]: value };
 
-        // Handle Age Range Logic
         if (key === 'age') {
             if (value === '50+') {
                 newFilters.minAge = 50;
@@ -51,13 +50,11 @@ const FilterPanel = ({ onFilter, onSort }) => {
 
         setFilters(newFilters);
 
-        // Clean up empty values
         const activeFilters = {};
         Object.keys(newFilters).forEach(k => {
             if (newFilters[k] !== '' && k !== 'age') activeFilters[k] = newFilters[k];
         });
 
-        // Explicitly add derived min/max
         if (newFilters.minAge) activeFilters.minAge = newFilters.minAge;
         if (newFilters.maxAge) activeFilters.maxAge = newFilters.maxAge;
 

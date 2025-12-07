@@ -3,7 +3,6 @@ import '../styles/Header.css';
 import SearchIcon from '../icons/SearchIcon';
 
 const Header = ({ user, onSearch }) => {
-    // Debounce search
     const [searchTerm, setSearchTerm] = React.useState('');
 
     React.useEffect(() => {

@@ -28,57 +28,48 @@ exports.getTransactions = async (req, res) => {
 
         const query = {};
 
-        // 1. Search (Name or Phone)
         if (search) {
-            const searchRegex = new RegExp(search, 'i'); // Case-insensitive
+            const searchRegex = new RegExp(search, 'i');
             query.$or = [
                 { customerName: searchRegex },
                 { phoneNumber: searchRegex }
             ];
         }
 
-        // 2. Filters
         if (customerRegion) query.customerRegion = parseArrayFilter(customerRegion);
         if (gender) query.gender = parseArrayFilter(gender);
         if (productCategory) query.productCategory = parseArrayFilter(productCategory);
         if (paymentMethod) query.paymentMethod = parseArrayFilter(paymentMethod);
         if (tags) query.tags = parseArrayFilter(tags);
 
-        // Age Range
         if (minAge || maxAge) {
             query.age = {};
             if (minAge) query.age.$gte = Number(minAge);
             if (maxAge) query.age.$lte = Number(maxAge);
         }
 
-        // Date Range
         if (startDate || endDate) {
             query.date = {};
             if (startDate) query.date.$gte = new Date(startDate);
             if (endDate) query.date.$lte = new Date(endDate);
         }
 
-        // 3. Sorting
         const sortOptions = {};
         if (sortBy) {
             sortOptions[sortBy] = sortOrder === 'asc' ? 1 : -1;
-            // Secondary sort for stability if needed (e.g. by _id)
             sortOptions._id = -1;
         }
 
-        // 4. Pagination
         const pageNum = Number(page);
         const limitNum = Number(limit);
         const skip = (pageNum - 1) * limitNum;
 
-        // Execute Query
         const total = await Transaction.countDocuments(query);
         const transactions = await Transaction.find(query)
             .sort(sortOptions)
             .skip(skip)
             .limit(limitNum);
 
-        // Calculate Stats for the Entire Filtered Dataset
         const statsPipeline = [
             { $match: query },
             {
@@ -86,10 +77,6 @@ exports.getTransactions = async (req, res) => {
                     _id: null,
                     totalUnits: { $sum: '$quantity' },
                     totalAmount: { $sum: '$totalAmount' },
-                    // Assuming totalDiscount is difference between totalAmount and finalAmount
-                    // If discountPercentage is reliable, could use that too. But comparing amounts is safe.
-                    // Actually, let's use discountPercentage logic just in case finalAmount is not fully populated? 
-                    // No, earlier we saw finalAmount in schema. Let's assume (totalAmount - finalAmount).
                     totalDiscount: {
                         $sum: {
                             $cond: {

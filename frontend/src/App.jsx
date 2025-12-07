@@ -14,7 +14,6 @@ function App() {
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, limit: 10 });
   const [loading, setLoading] = useState(false);
 
-  // State for Filters and Search
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState({});
   const [sort, setSort] = useState({ sortBy: 'date', sortOrder: 'desc' });
@@ -34,7 +33,6 @@ function App() {
       setData(result.data);
       setPagination(result.pagination);
 
-      // Update stats if backend provides them (it will after our next backend update)
       if (result.stats) {
         setStats(result.stats);
       }
@@ -49,11 +47,9 @@ function App() {
     loadData();
   }, [pagination.page, search, filters, sort]);
 
-  // Handler functions
-  // useCallback is crucial here to prevent downstream useEffects (like in Header) from re-triggering unnecessarily
   const handleSearch = React.useCallback((query) => {
     setSearch(query);
-    setPagination(prev => ({ ...prev, page: 1 })); // Reset to page 1
+    setPagination(prev => ({ ...prev, page: 1 }));
   }, []);
 
   const handleFilterChange = React.useCallback((newFilters) => {

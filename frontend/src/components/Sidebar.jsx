@@ -1,12 +1,13 @@
 import React from 'react';
 import '../styles/Sidebar.css';
+import LogoIcon from '../icons/LogoIcon';
 
 const Sidebar = () => {
     return (
         <aside className="sidebar">
             <div className="logo-section">
-                <div className="logo-icon">V</div>
-                <span className="logo-text">Vault</span>
+                <div className="logo-icon"><LogoIcon /></div>
+                <span className="logo-text">TruEstate</span>
             </div>
 
             <nav className="nav-menu">

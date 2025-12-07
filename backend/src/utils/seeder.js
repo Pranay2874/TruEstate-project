@@ -28,9 +28,16 @@ const importData = async () => {
         fs.createReadStream(DATA_FILE)
             .pipe(csv())
             .on('data', (row) => {
-                // Transform row if keys don't match exactly or need parsing
-                // Assuming CSV headers match schema keys or mapping is needed
-                // Simple mapping example based on provided fields:
+
+                let tagsArray = [];
+                if (row['Tags']) {
+                    tagsArray = row['Tags'].split(',').map(t => t.trim().toLowerCase());
+                }
+
+                const parseDate = (dateStr) => {
+                    const d = new Date(dateStr);
+                    return isNaN(d) ? new Date() : d;
+                };
 
                 const transaction = {
                     transactionId: row['Transaction ID'],
@@ -38,20 +45,20 @@ const importData = async () => {
                     customerName: row['Customer Name'],
                     phoneNumber: row['Phone Number'],
                     gender: row['Gender'],
-                    age: Number(row['Age']),
+                    age: parseInt(row['Age']) || 0,
                     customerRegion: row['Customer Region'],
                     customerType: row['Customer Type'],
                     productId: row['Product ID'],
                     productName: row['Product Name'],
                     brand: row['Brand'],
                     productCategory: row['Product Category'],
-                    tags: row['Tags'] ? row['Tags'].split(',').map(t => t.trim()) : [], // Handle string list
-                    quantity: Number(row['Quantity']),
-                    pricePerUnit: Number(row['Price per Unit']),
-                    discountPercentage: Number(row['Discount Percentage']),
-                    totalAmount: Number(row['Total Amount']),
-                    finalAmount: Number(row['Final Amount']),
-                    date: new Date(row['Date']),
+                    tags: tagsArray,
+                    quantity: parseInt(row['Quantity']) || 0,
+                    pricePerUnit: parseFloat(row['Price per Unit']) || 0.0,
+                    discountPercentage: parseFloat(row['Discount Percentage']) || 0.0,
+                    totalAmount: parseFloat(row['Total Amount']) || 0.0,
+                    finalAmount: parseFloat(row['Final Amount']) || 0.0,
+                    date: parseDate(row['Date']),
                     paymentMethod: row['Payment Method'],
                     orderStatus: row['Order Status'],
                     deliveryType: row['Delivery Type'],
@@ -63,18 +70,13 @@ const importData = async () => {
 
                 transactions.push(transaction);
 
-                // Batch insert every 5000 records to save memory
                 if (transactions.length >= 5000) {
-                    // Insert logic could be async here, but for simplicity in stream:
-                    // Actually, pausing stream for async insert is better.
-                    // But 100k memory is manageable for Node (approx 100MB). 
-                    // Let's optimize: Pause stream, insert, resume.
+
                 }
             })
             .on('end', async () => {
                 console.log(`Parsed ${transactions.length} records. Inserting...`);
                 try {
-                    // Insert in chunks
                     const chunkSize = 5000;
                     for (let i = 0; i < transactions.length; i += chunkSize) {
                         const chunk = transactions.slice(i, i + chunkSize);
