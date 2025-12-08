@@ -25,7 +25,10 @@ exports.getTransactions = async (req, res) => {
             endDate
         } = req.query;
 
-        let salesQuery = supabase
+        // Base query with joins
+        // We use !inner for joins where we might want to filter, to ensure records match
+        // default to left join if no strict filter needed, but !inner is safer for 'search' on relations
+        let query = supabase
             .from('sales')
             .select(`
                 sales_id,
@@ -38,7 +41,7 @@ exports.getTransactions = async (req, res) => {
                 payment_method,
                 order_status,
                 delivery_type,
-                customers (
+                customers!inner (
                     customer_id,
                     customer_name,
                     phone_number,
@@ -47,7 +50,7 @@ exports.getTransactions = async (req, res) => {
                     customer_region,
                     customer_type
                 ),
-                products (
+                products!inner (
                     product_id,
                     product_name,
                     brand,
@@ -64,114 +67,77 @@ exports.getTransactions = async (req, res) => {
                 )
             `, { count: 'exact' });
 
-        salesQuery = salesQuery.order('date', { ascending: false });
-        salesQuery = salesQuery.range(0, 999);
+        // Apply Search (Server-side)
+        if (search) {
+            // Searching on joined customer name
+            query = query.ilike('customers.customer_name', `%${search}%`);
+        }
 
-        const { data: salesRecords, error: dbErr } = await salesQuery;
+        // Apply Filters (Server-side)
+        if (customerRegion) {
+            const regions = splitFilters(customerRegion);
+            query = query.in('customers.customer_region', regions);
+        }
+
+        if (gender) {
+            const genders = splitFilters(gender);
+            query = query.in('customers.gender', genders);
+        }
+
+        if (productCategory) {
+            const categories = splitFilters(productCategory);
+            query = query.in('products.product_category', categories);
+        }
+
+        if (paymentMethod) {
+            const methods = splitFilters(paymentMethod);
+            query = query.in('payment_method', methods);
+        }
+
+        if (minAge) {
+            query = query.gte('customers.age', parseInt(minAge));
+        }
+
+        if (maxAge) {
+            query = query.lte('customers.age', parseInt(maxAge));
+        }
+
+        if (startDate) {
+            query = query.gte('date', startDate);
+        }
+
+        if (endDate) {
+            query = query.lte('date', endDate);
+        }
+
+        // Apply Sorting
+        if (sortBy === 'date') {
+            query = query.order('date', { ascending: sortOrder === 'asc' });
+        } else if (sortBy === 'quantity') {
+            query = query.order('quantity', { ascending: sortOrder === 'asc' });
+        } else if (sortBy === 'customerName') {
+            // Sorting by foreign table column
+            query = query.order('customer_name', { foreignTable: 'customers', ascending: sortOrder === 'asc' });
+        } else {
+            query = query.order('date', { ascending: false });
+        }
+
+        // Apply Pagination
+        const pageNum = parseInt(page) || 1;
+        const limitNum = parseInt(limit) || 10;
+        const from = (pageNum - 1) * limitNum;
+        const to = from + limitNum - 1;
+
+        query = query.range(from, to);
+
+        const { data: salesRecords, count, error: dbErr } = await query;
 
         if (dbErr) {
             console.error('Supabase query error:', dbErr);
             return res.status(500).json({ error: 'Failed to fetch sales data from database' });
         }
 
-        let filteredRecords = salesRecords || [];
-
-        if (search) {
-            const searchLower = search.toLowerCase();
-            filteredRecords = filteredRecords.filter(sale => {
-                const customer = sale.customers || {};
-                const name = (customer.customer_name || '').toLowerCase();
-                const phone = (customer.phone_number || '').toLowerCase();
-                return name.includes(searchLower) || phone.includes(searchLower);
-            });
-        }
-
-        if (customerRegion) {
-            const regions = splitFilters(customerRegion);
-            filteredRecords = filteredRecords.filter(sale => {
-                const customer = sale.customers || {};
-                return regions.includes(customer.customer_region);
-            });
-        }
-
-        if (gender) {
-            const genders = splitFilters(gender);
-            filteredRecords = filteredRecords.filter(sale => {
-                const customer = sale.customers || {};
-                return genders.includes(customer.gender);
-            });
-        }
-
-        if (productCategory) {
-            const categories = splitFilters(productCategory);
-            filteredRecords = filteredRecords.filter(sale => {
-                const product = sale.products || {};
-                return categories.includes(product.product_category);
-            });
-        }
-
-        if (paymentMethod) {
-            const methods = splitFilters(paymentMethod);
-            filteredRecords = filteredRecords.filter(sale => {
-                return methods.includes(sale.payment_method);
-            });
-        }
-
-        if (minAge) {
-            filteredRecords = filteredRecords.filter(sale => {
-                const customer = sale.customers || {};
-                return (customer.age || 0) >= parseInt(minAge);
-            });
-        }
-
-        if (maxAge) {
-            filteredRecords = filteredRecords.filter(sale => {
-                const customer = sale.customers || {};
-                return (customer.age || 0) <= parseInt(maxAge);
-            });
-        }
-
-        if (startDate) {
-            filteredRecords = filteredRecords.filter(sale => {
-                return sale.date >= startDate;
-            });
-        }
-
-        if (endDate) {
-            filteredRecords = filteredRecords.filter(sale => {
-                return sale.date <= endDate;
-            });
-        }
-
-        const ascending = sortOrder === 'asc';
-
-        if (sortBy === 'customerName') {
-            filteredRecords.sort((a, b) => {
-                const nameA = (a.customers?.customer_name || '').toLowerCase();
-                const nameB = (b.customers?.customer_name || '').toLowerCase();
-                return ascending ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
-            });
-        } else if (sortBy === 'quantity') {
-            filteredRecords.sort((a, b) => {
-                return ascending ? a.quantity - b.quantity : b.quantity - a.quantity;
-            });
-        } else if (sortBy === 'date') {
-            filteredRecords.sort((a, b) => {
-                const dateA = new Date(a.date);
-                const dateB = new Date(b.date);
-                return ascending ? dateA - dateB : dateB - dateA;
-            });
-        }
-
-        const totalCount = filteredRecords.length;
-
-        const pageNum = parseInt(page);
-        const limitNum = parseInt(limit);
-        const startIdx = (pageNum - 1) * limitNum;
-        const endIdx = startIdx + limitNum;
-        const paginatedRecords = filteredRecords.slice(startIdx, endIdx);
-
-        const results = paginatedRecords.map(sale => {
+        const results = (salesRecords || []).map(sale => {
             const customer = sale.customers || {};
             const product = sale.products || {};
             const store = sale.stores || {};
@@ -208,13 +174,10 @@ exports.getTransactions = async (req, res) => {
             };
         });
 
-        const stats = filteredRecords.reduce((acc, sale) => {
-            acc.totalUnits += sale.quantity || 0;
-            acc.totalAmount += parseFloat(sale.total_amount) || 0;
-            acc.totalDiscount += (parseFloat(sale.total_amount) || 0) - (parseFloat(sale.final_amount) || 0);
-            return acc;
-        }, { totalUnits: 0, totalAmount: 0, totalDiscount: 0 });
+        // Determine pagination
+        const totalCount = count || 0;
 
+        // Return results (stats omitted for performance on large dataset listing)
         res.json({
             data: results,
             pagination: {
@@ -223,7 +186,7 @@ exports.getTransactions = async (req, res) => {
                 limit: limitNum,
                 totalPages: Math.ceil(totalCount / limitNum)
             },
-            stats
+            stats: { totalUnits: 0, totalAmount: 0, totalDiscount: 0 }
         });
 
     } catch (err) {
@@ -302,7 +265,7 @@ exports.getEmployeePerformance = async (req, res) => {
             `);
 
         salesQuery = salesQuery.order('salesperson_id', { ascending: true });
-        salesQuery = salesQuery.range(0, 9999);
+        salesQuery = salesQuery.range(0, 99999);
 
         const { data: salesRecords, error: dbErr } = await salesQuery;
 
