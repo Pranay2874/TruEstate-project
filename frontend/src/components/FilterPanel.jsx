@@ -75,8 +75,8 @@ const FilterPanel = ({ onFilter, onSort }) => {
 
                 <select className="filter-dropdown" onChange={(e) => handleChange('gender', e.target.value)}>
                     <option value="">Gender</option>
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
+                    <option value="MALE">Male</option>
+                    <option value="FEMALE">Female</option>
                 </select>
 
                 <select className="filter-dropdown" onChange={(e) => handleChange('age', e.target.value)}>
