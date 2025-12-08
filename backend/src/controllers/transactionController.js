@@ -67,8 +67,8 @@ exports.getTransactions = async (req, res) => {
 
 
         if (search) {
-
-            query = query.ilike('customers.customer_name', `%${search}%`);
+            // Use Supabase .or() with foreign table reference
+            query = query.or(`customer_name.ilike.%${search}%,phone_number.ilike.%${search}%`, { foreignTable: 'customers' });
         }
 
 
@@ -99,11 +99,13 @@ exports.getTransactions = async (req, res) => {
         }
 
         if (minAge) {
-            query = query.gte('customers.age', parseInt(minAge));
+            const min = parseInt(minAge);
+            if (!isNaN(min)) query = query.gte('customers.age', min);
         }
 
         if (maxAge) {
-            query = query.lte('customers.age', parseInt(maxAge));
+            const max = parseInt(maxAge);
+            if (!isNaN(max)) query = query.lte('customers.age', max);
         }
 
         if (startDate) {
@@ -201,7 +203,6 @@ exports.getTransactions = async (req, res) => {
 
 exports.getFilterOptions = async (req, res) => {
     try {
-        console.log('Fetching filter options...');
         // Note: Supabase API has a max row limit (often 1000). 
         // For production with >1k rows, we should use RPC "distinct" functions or recursive fetching.
         // attempting larger range, but might be capped by server policies.
@@ -252,8 +253,6 @@ exports.getFilterOptions = async (req, res) => {
         const tags = [...new Set(allTags.filter(Boolean))].sort();
 
         const paymentMethods = [...new Set(paymentData?.map(p => p.payment_method).filter(Boolean))].sort();
-
-        console.log(`Loaded options: Regions(${regions.length}), Categories(${categories.length}), Tags(${tags.length})`);
 
         res.json({
             regions,

@@ -96,7 +96,6 @@ function App() {
   }, []);
 
   const handlePageChange = React.useCallback((newPage) => {
-    console.log('App: Setting page to', newPage);
     setPagination(prev => ({ ...prev, page: newPage }));
   }, []);
 
