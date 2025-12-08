@@ -121,35 +121,42 @@ exports.getTransactions = async (req, res) => {
             return res.status(500).json({ error: 'Database query failed' });
         }
 
-        const flattenedData = data.map(sale => ({
-            _id: sale.sales_id,
-            transactionId: sale.sales_id.toString(),
-            customerId: sale.customers?.customer_id || '',
-            customerName: sale.customers?.customer_name || '',
-            phoneNumber: sale.customers?.phone_number || '',
-            gender: sale.customers?.gender || '',
-            age: sale.customers?.age || 0,
-            customerRegion: sale.customers?.customer_region || '',
-            customerType: sale.customers?.customer_type || '',
-            productId: sale.products?.product_id || '',
-            productName: sale.products?.product_name || '',
-            brand: sale.products?.brand || '',
-            productCategory: sale.products?.product_category || '',
-            tags: sale.products?.tags || [],
-            quantity: sale.quantity,
-            pricePerUnit: sale.price_per_unit,
-            discountPercentage: sale.discount_percentage,
-            totalAmount: sale.total_amount,
-            finalAmount: sale.final_amount,
-            date: sale.date,
-            paymentMethod: sale.payment_method,
-            orderStatus: sale.order_status,
-            deliveryType: sale.delivery_type,
-            storeId: sale.stores?.store_id || '',
-            storeLocation: sale.stores?.store_location || '',
-            salespersonId: sale.employees?.salesperson_id || '',
-            employeeName: sale.employees?.employee_name || ''
-        }));
+        const results = data.map(item => {
+            const customer = item.customers || {};
+            const product = item.products || {};
+            const store = item.stores || {};
+            const employee = item.employees || {};
+
+            return {
+                _id: item.sales_id,
+                transactionId: item.sales_id.toString(),
+                customerId: customer.customer_id || '',
+                customerName: customer.customer_name || '',
+                phoneNumber: customer.phone_number || '',
+                gender: customer.gender || '',
+                age: customer.age || 0,
+                customerRegion: customer.customer_region || '',
+                customerType: customer.customer_type || '',
+                productId: product.product_id || '',
+                productName: product.product_name || '',
+                brand: product.brand || '',
+                productCategory: product.product_category || '',
+                tags: product.tags || [],
+                quantity: item.quantity,
+                pricePerUnit: item.price_per_unit,
+                discountPercentage: item.discount_percentage,
+                totalAmount: item.total_amount,
+                finalAmount: item.final_amount,
+                date: item.date,
+                paymentMethod: item.payment_method,
+                orderStatus: item.order_status,
+                deliveryType: item.delivery_type,
+                storeId: store.store_id || '',
+                storeLocation: store.store_location || '',
+                salespersonId: employee.salesperson_id || '',
+                employeeName: employee.employee_name || ''
+            };
+        });
 
         let statsQuery = supabase
             .from('sales')
@@ -159,23 +166,33 @@ exports.getTransactions = async (req, res) => {
             statsQuery = statsQuery.or(`customers.customer_name.ilike.%${search}%,customers.phone_number.ilike.%${search}%`);
         }
 
-        const { data: statsData, error: statsError } = await statsQuery;
+        const { data: statsData } = await statsQuery;
 
-        const stats = {
-            totalUnits: statsData?.reduce((sum, row) => sum + (row.quantity || 0), 0) || 0,
-            totalAmount: statsData?.reduce((sum, row) => sum + (parseFloat(row.total_amount) || 0), 0) || 0,
-            totalDiscount: statsData?.reduce((sum, row) => sum + ((parseFloat(row.total_amount) || 0) - (parseFloat(row.final_amount) || 0)), 0) || 0
-        };
+        let totalUnits = 0;
+        let totalAmt = 0;
+        let totalDisc = 0;
+
+        if (statsData) {
+            statsData.forEach(row => {
+                totalUnits += row.quantity || 0;
+                totalAmt += parseFloat(row.total_amount) || 0;
+                totalDisc += (parseFloat(row.total_amount) || 0) - (parseFloat(row.final_amount) || 0);
+            });
+        }
 
         res.json({
-            data: flattenedData,
+            data: results,
             pagination: {
                 total: count || 0,
                 page: pageNum,
                 limit: limitNum,
                 totalPages: Math.ceil((count || 0) / limitNum)
             },
-            stats
+            stats: {
+                totalUnits,
+                totalAmount: totalAmt,
+                totalDiscount: totalDisc
+            }
         });
 
     } catch (error) {
@@ -186,36 +203,46 @@ exports.getTransactions = async (req, res) => {
 
 exports.getFilterOptions = async (req, res) => {
     try {
-        const { data: regions } = await supabase
+        const { data: regionData } = await supabase
             .from('customers')
             .select('customer_region')
             .not('customer_region', 'is', null);
 
-        const { data: categories } = await supabase
+        const { data: categoryData } = await supabase
             .from('products')
             .select('product_category')
             .not('product_category', 'is', null);
 
-        const { data: tagsData } = await supabase
+        const { data: tagData } = await supabase
             .from('products')
             .select('tags')
             .not('tags', 'is', null);
 
-        const { data: paymentMethods } = await supabase
+        const { data: paymentData } = await supabase
             .from('sales')
             .select('payment_method')
             .not('payment_method', 'is', null);
 
-        const uniqueRegions = [...new Set(regions?.map(r => r.customer_region).filter(Boolean))];
-        const uniqueCategories = [...new Set(categories?.map(c => c.product_category).filter(Boolean))];
-        const uniqueTags = [...new Set(tagsData?.flatMap(t => t.tags || []).filter(Boolean))];
-        const uniquePaymentMethods = [...new Set(paymentMethods?.map(p => p.payment_method).filter(Boolean))];
+        const regions = [...new Set(regionData?.map(r => r.customer_region).filter(Boolean))];
+        const categories = [...new Set(categoryData?.map(c => c.product_category).filter(Boolean))];
+
+        let allTags = [];
+        if (tagData) {
+            tagData.forEach(item => {
+                if (item.tags) {
+                    allTags = allTags.concat(item.tags);
+                }
+            });
+        }
+        const tags = [...new Set(allTags.filter(Boolean))];
+
+        const paymentMethods = [...new Set(paymentData?.map(p => p.payment_method).filter(Boolean))];
 
         res.json({
-            regions: uniqueRegions,
-            categories: uniqueCategories,
-            tags: uniqueTags,
-            paymentMethods: uniquePaymentMethods
+            regions,
+            categories,
+            tags,
+            paymentMethods
         });
     } catch (error) {
         console.error('Error fetching filter options:', error);
