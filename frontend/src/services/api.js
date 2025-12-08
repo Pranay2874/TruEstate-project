@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// API base URL - pointing to deployed render backend
-const API_URL = 'https://truestate-project-zled.onrender.com/api/transactions';
+// API base URL - pointing to local backend for testing
+const API_URL = 'http://localhost:5000/api/transactions';
 
 // fetching transactions with filters, pagination, sorting
 export const fetchTransactions = async (params) => {
@@ -21,6 +21,17 @@ export const fetchFilterOptions = async () => {
         return response.data;
     } catch (err) {
         console.error('Error fetching filter options:', err);
+        throw err;
+    }
+};
+
+// fetching employee performance data with aggregated stats
+export const fetchEmployeePerformance = async (params) => {
+    try {
+        const response = await axios.get(`${API_URL}/employees`, { params });
+        return response.data;
+    } catch (err) {
+        console.error('Error fetching employee performance:', err);
         throw err;
     }
 };

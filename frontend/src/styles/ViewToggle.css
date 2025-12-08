@@ -1,0 +1,32 @@
+.view-toggle-container {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding: 8px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    width: fit-content;
+}
+
+.view-toggle-btn {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: #666;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.view-toggle-btn:hover {
+    background: #e9ecef;
+    color: #333;
+}
+
+.view-toggle-btn.active {
+    background: #6366f1;
+    color: white;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+}

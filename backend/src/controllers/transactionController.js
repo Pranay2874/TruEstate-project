@@ -304,3 +304,104 @@ exports.getFilterOptions = async (req, res) => {
         res.status(500).json({ error: 'Failed to load filter options' });
     }
 };
+
+// fetching employee performance data with aggregated stats
+exports.getEmployeePerformance = async (req, res) => {
+    try {
+        const {
+            page = 1,
+            limit = 10,
+            search
+        } = req.query;
+
+        // fetch all sales with employee data
+        let salesQuery = supabase
+            .from('sales')
+            .select(`
+                quantity,
+                total_amount,
+                final_amount,
+                employees (
+                    salesperson_id,
+                    employee_name
+                )
+            `);
+
+        salesQuery = salesQuery.order('salesperson_id', { ascending: true });
+        salesQuery = salesQuery.range(0, 9999); // fetch all records for aggregation
+
+        const { data: salesRecords, error: dbErr } = await salesQuery;
+
+        if (dbErr) {
+            console.error('Supabase query error:', dbErr);
+            return res.status(500).json({ error: 'Failed to fetch employee data' });
+        }
+
+        // aggregate sales by employee
+        const employeeMap = {};
+
+        salesRecords.forEach(sale => {
+            const employee = sale.employees || {};
+            const empId = employee.salesperson_id;
+            const empName = employee.employee_name || 'Unknown';
+
+            if (!empId) return;
+
+            if (!employeeMap[empId]) {
+                employeeMap[empId] = {
+                    employeeId: empId,
+                    employeeName: empName,
+                    totalUnits: 0,
+                    totalAmount: 0,
+                    totalDiscount: 0
+                };
+            }
+
+            employeeMap[empId].totalUnits += sale.quantity || 0;
+            employeeMap[empId].totalAmount += parseFloat(sale.total_amount) || 0;
+            employeeMap[empId].totalDiscount += (parseFloat(sale.total_amount) || 0) - (parseFloat(sale.final_amount) || 0);
+        });
+
+        // convert map to array
+        let employeeList = Object.values(employeeMap);
+
+        // search filter by employee name
+        if (search) {
+            const searchLower = search.toLowerCase();
+            employeeList = employeeList.filter(emp =>
+                emp.employeeName.toLowerCase().includes(searchLower)
+            );
+        }
+
+        // calculate overall stats from filtered employees
+        const stats = employeeList.reduce((acc, emp) => {
+            acc.totalUnits += emp.totalUnits;
+            acc.totalAmount += emp.totalAmount;
+            acc.totalDiscount += emp.totalDiscount;
+            return acc;
+        }, { totalUnits: 0, totalAmount: 0, totalDiscount: 0 });
+
+        // pagination
+        const pageNum = parseInt(page);
+        const limitNum = parseInt(limit);
+        const totalCount = employeeList.length;
+        const startIdx = (pageNum - 1) * limitNum;
+        const endIdx = startIdx + limitNum;
+        const paginatedEmployees = employeeList.slice(startIdx, endIdx);
+
+        res.json({
+            data: paginatedEmployees,
+            pagination: {
+                total: totalCount,
+                page: pageNum,
+                limit: limitNum,
+                totalPages: Math.ceil(totalCount / limitNum)
+            },
+            stats
+        });
+
+    } catch (err) {
+        console.error('Error fetching employee performance:', err);
+        res.status(500).json({ error: 'Failed to load employee performance data' });
+    }
+};
