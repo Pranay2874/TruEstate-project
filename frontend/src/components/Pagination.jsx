@@ -3,6 +3,8 @@ import '../styles/Pagination.css';
 
 const Pagination = ({ current, total, onPageChange }) => {
 
+    // custom pagination algorithm to show page numbers with ellipsis
+    // showing current page with siblings and first/last pages
     const paginationRange = () => {
         const totalPageCount = total;
         const siblingCount = 1;
@@ -60,17 +62,17 @@ const Pagination = ({ current, total, onPageChange }) => {
                 Previous
             </button>
 
-            {pages.map((p, index) => {
-                if (p === '...') {
+            {pages.map((pageNum, index) => {
+                if (pageNum === '...') {
                     return <span key={`dots-${index}`} className="dots">...</span>;
                 }
                 return (
                     <button
-                        key={p}
-                        className={`page-btn ${current === p ? 'active' : ''}`}
-                        onClick={() => onPageChange(p)}
+                        key={pageNum}
+                        className={`page-btn ${current === pageNum ? 'active' : ''}`}
+                        onClick={() => onPageChange(pageNum)}
                     >
-                        {p}
+                        {pageNum}
                     </button>
                 );
             })}

@@ -4,7 +4,8 @@ import '../styles/FilterPanel.css';
 import RefreshIcon from '../icons/RefreshIcon';
 
 const FilterPanel = ({ onFilter, onSort }) => {
-    const [options, setOptions] = useState({
+    // storing filter dropdown options from API
+    const [filterChoices, setFilterChoices] = useState({
         regions: [],
         categories: [],
         tags: [],
@@ -19,11 +20,12 @@ const FilterPanel = ({ onFilter, onSort }) => {
         dateRange: ''
     });
 
+    // loading filter options on component mount
     useEffect(() => {
         const loadOptions = async () => {
             try {
                 const data = await fetchFilterOptions();
-                setOptions(data);
+                setFilterChoices(data);
             } catch (err) {
                 console.error("Failed to load filter options", err);
             }
@@ -31,9 +33,11 @@ const FilterPanel = ({ onFilter, onSort }) => {
         loadOptions();
     }, []);
 
+    // handling filter changes and converting age range to min/max
     const handleChange = (key, value) => {
         let newFilters = { ...filters, [key]: value };
 
+        // special handling for age range - converting to minAge/maxAge
         if (key === 'age') {
             if (value === '50+') {
                 newFilters.minAge = 50;
@@ -50,6 +54,7 @@ const FilterPanel = ({ onFilter, onSort }) => {
 
         setFilters(newFilters);
 
+        // extracting only active filters (non-empty values)
         const activeFilters = {};
         Object.keys(newFilters).forEach(k => {
             if (newFilters[k] !== '' && k !== 'age') activeFilters[k] = newFilters[k];
@@ -70,7 +75,7 @@ const FilterPanel = ({ onFilter, onSort }) => {
 
                 <select className="filter-dropdown" onChange={(e) => handleChange('customerRegion', e.target.value)}>
                     <option value="">Customer Region</option>
-                    {options.regions.map(r => <option key={r} value={r}>{r}</option>)}
+                    {filterChoices.regions.map(r => <option key={r} value={r}>{r}</option>)}
                 </select>
 
                 <select className="filter-dropdown" onChange={(e) => handleChange('gender', e.target.value)}>
@@ -89,12 +94,12 @@ const FilterPanel = ({ onFilter, onSort }) => {
 
                 <select className="filter-dropdown" onChange={(e) => handleChange('productCategory', e.target.value)}>
                     <option value="">Product Category</option>
-                    {options.categories.map(c => <option key={c} value={c}>{c}</option>)}
+                    {filterChoices.categories.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
 
                 <select className="filter-dropdown" onChange={(e) => handleChange('tags', e.target.value)}>
                     <option value="">Tags</option>
-                    {options.tags.map(t => <option key={t} value={t}>{t}</option>)}
+                    {filterChoices.tags.map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
 
                 <input

@@ -2,8 +2,8 @@ import { formatDate, formatCurrency } from '../utils/helpers';
 import '../styles/TransactionTable.css';
 
 const TransactionTable = ({ data, loading }) => {
-    if (loading) return <div className="loading">Loading...</div>;
-    if (!data || data.length === 0) return <div className="no-results">No search results found</div>;
+    if (loading) return <div className="loading">Loading sales data...</div>;
+    if (!data || data.length === 0) return <div className="no-results">No transactions found</div>;
 
     return (
         <div className="table-container">
@@ -26,26 +26,26 @@ const TransactionTable = ({ data, loading }) => {
                     </tr>
                 </thead>
                 <tbody>
-                    {data.map((item) => (
-                        <tr key={item._id}>
-                            <td className="text-secondary">{item.transactionId || '---'}</td>
-                            <td>{formatDate(item.date)}</td>
-                            <td className="font-medium">{item.customerId}</td>
-                            <td className="font-medium text-dark">{item.customerName}</td>
+                    {data.map((transaction) => (
+                        <tr key={transaction._id}>
+                            <td className="text-secondary">{transaction.transactionId || '---'}</td>
+                            <td>{formatDate(transaction.date)}</td>
+                            <td className="font-medium">{transaction.customerId}</td>
+                            <td className="font-medium text-dark">{transaction.customerName}</td>
                             <td>
                                 <div className="phone-cell">
-                                    {item.phoneNumber}
+                                    {transaction.phoneNumber}
                                 </div>
                             </td>
-                            <td>{item.gender}</td>
-                            <td>{item.age}</td>
-                            <td className="font-medium text-dark">{item.productCategory}</td>
-                            <td className="text-center bold">{item.quantity}</td>
-                            <td className="font-medium">{formatCurrency(item.totalAmount)}</td>
+                            <td>{transaction.gender}</td>
+                            <td>{transaction.age}</td>
+                            <td className="font-medium text-dark">{transaction.productCategory}</td>
+                            <td className="text-center bold">{transaction.quantity}</td>
+                            <td className="font-medium">{formatCurrency(transaction.totalAmount)}</td>
 
-                            <td className="font-medium text-dark">{item.customerRegion}</td>
-                            <td>{item.productId || 'PROD0001'}</td>
-                            <td className="font-medium text-dark">{item.employeeName || 'Harsh Agrawal'}</td>
+                            <td className="font-medium text-dark">{transaction.customerRegion}</td>
+                            <td>{transaction.productId || 'PROD0001'}</td>
+                            <td className="font-medium text-dark">{transaction.employeeName || 'Harsh Agrawal'}</td>
                         </tr>
                     ))}
                 </tbody>

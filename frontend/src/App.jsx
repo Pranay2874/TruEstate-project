@@ -9,17 +9,19 @@ import TransactionTable from './components/TransactionTable';
 import Pagination from './components/Pagination';
 
 function App() {
-  const [data, setData] = useState([]);
+  // state management for sales data and UI
+  const [salesData, setSalesData] = useState([]);
   const [stats, setStats] = useState({ totalUnits: 0, totalAmount: 0, totalDiscount: 0 });
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, limit: 10 });
-  const [loading, setLoading] = useState(false);
+  const [isFetching, setIsFetching] = useState(false);
 
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState({});
   const [sort, setSort] = useState({ sortBy: 'date', sortOrder: 'desc' });
 
+  // loading data from API with current filters and pagination
   const loadData = async () => {
-    setLoading(true);
+    setIsFetching(true);
     try {
       const params = {
         page: pagination.page,
@@ -30,19 +32,20 @@ function App() {
         ...filters
       };
       const result = await fetchTransactions(params);
-      setData(result.data);
+      setSalesData(result.data);
       setPagination(result.pagination);
 
       if (result.stats) {
         setStats(result.stats);
       }
     } catch (err) {
-      console.error(err);
+      console.error('Failed to load sales data:', err);
     } finally {
-      setLoading(false);
+      setIsFetching(false);
     }
   };
 
+  // reload data whenever filters, search, sort, or page changes
   useEffect(() => {
     loadData();
   }, [pagination.page, search, filters, sort]);
@@ -82,8 +85,8 @@ function App() {
           />
 
           <TransactionTable
-            data={data}
-            loading={loading}
+            data={salesData}
+            loading={isFetching}
           />
 
           <Pagination

@@ -3,15 +3,17 @@ import '../styles/Header.css';
 import SearchIcon from '../icons/SearchIcon';
 
 const Header = ({ user, onSearch }) => {
-    const [searchTerm, setSearchTerm] = React.useState('');
+    const [query, setQuery] = React.useState('');
 
+    // debouncing search input - waiting 500ms after user stops typing
+    // this prevents too many API calls while user is typing
     React.useEffect(() => {
         const delayDebounceFn = setTimeout(() => {
-            if (onSearch) onSearch(searchTerm);
+            if (onSearch) onSearch(query);
         }, 500);
 
         return () => clearTimeout(delayDebounceFn);
-    }, [searchTerm, onSearch]);
+    }, [query, onSearch]);
 
     return (
         <header className="top-header">
@@ -21,7 +23,7 @@ const Header = ({ user, onSearch }) => {
                     type="text"
                     placeholder="Name, Phone no."
                     className="search-input-top"
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={(e) => setQuery(e.target.value)}
                 />
             </div>
             <div className="user-profile">
