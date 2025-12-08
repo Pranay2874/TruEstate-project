@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  --primary-color: #7C3AED; /* Purple like image */
+  --primary-color: #7C3AED;
   --primary-light: #F3E8FF;
   --secondary-color: #6366F1;
   --text-main: #111827;
@@ -11,11 +11,11 @@
   --border-color: #E5E7EB;
   --danger-color: #EF4444;
   --success-color: #10B981;
-  
+
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  
+
   --radius-md: 8px;
   --radius-lg: 12px;
 }
@@ -39,18 +39,20 @@ button {
   cursor: pointer;
 }
 
-/* Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
+
 ::-webkit-scrollbar-track {
-  background: transparent; 
+  background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
-  background: #D1D5DB; 
+  background: #D1D5DB;
   border-radius: 4px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
-  background: #9CA3AF; 
+  background: #9CA3AF;
 }

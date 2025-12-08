@@ -4,7 +4,6 @@ import '../styles/FilterPanel.css';
 import RefreshIcon from '../icons/RefreshIcon';
 
 const FilterPanel = ({ onFilter, onSort }) => {
-    // storing filter dropdown options from API
     const [filterChoices, setFilterChoices] = useState({
         regions: [],
         categories: [],
@@ -20,7 +19,6 @@ const FilterPanel = ({ onFilter, onSort }) => {
         dateRange: ''
     });
 
-    // loading filter options on component mount
     useEffect(() => {
         const loadOptions = async () => {
             try {
@@ -33,11 +31,9 @@ const FilterPanel = ({ onFilter, onSort }) => {
         loadOptions();
     }, []);
 
-    // handling filter changes and converting age range to min/max
     const handleChange = (key, value) => {
         let newFilters = { ...filters, [key]: value };
 
-        // special handling for age range - converting to minAge/maxAge
         if (key === 'age') {
             if (value === '50+') {
                 newFilters.minAge = 50;
@@ -54,7 +50,6 @@ const FilterPanel = ({ onFilter, onSort }) => {
 
         setFilters(newFilters);
 
-        // extracting only active filters (non-empty values)
         const activeFilters = {};
         Object.keys(newFilters).forEach(k => {
             if (newFilters[k] !== '' && k !== 'age') activeFilters[k] = newFilters[k];

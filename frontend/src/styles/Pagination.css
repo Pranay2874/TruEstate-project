@@ -30,11 +30,9 @@
 
 .page-btn.active {
     background-color: var(--text-main);
-    /* Dark active per image logic or primary */
     color: #fff;
 }
 
-/* Wait, image shows black active background for page number */
 .page-btn.active:hover {
     background-color: #000;
 }

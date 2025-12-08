@@ -3,8 +3,6 @@ import '../styles/Pagination.css';
 
 const Pagination = ({ current, total, onPageChange }) => {
 
-    // custom pagination algorithm to show page numbers with ellipsis
-    // showing current page with siblings and first/last pages
     const paginationRange = () => {
         const totalPageCount = total;
         const siblingCount = 1;

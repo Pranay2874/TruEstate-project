@@ -8,7 +8,6 @@ I built the backend using **Node.js** and **Express**. I chose a **Layered Archi
 *   `src/routes` - I separated the routes to keep `index.js` clean.
 *   `src/controllers` - All the logic for sorting, filtering, and stats lives here.
 *   `src/config` - Supabase client configuration.
-*   `src/utils` - I put the CSV seeder script here.
 
 ### How Data Flows
 1.  **Request**: When you change a filter on the frontend, it sends a GET request.

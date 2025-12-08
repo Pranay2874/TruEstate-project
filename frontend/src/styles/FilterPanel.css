@@ -4,12 +4,10 @@
     justify-content: space-between;
     margin-bottom: 24px;
     background-color: transparent;
-    /* Transparent bg as per image which merges with body */
     padding: 0;
     box-shadow: none;
     border: none;
     flex-wrap: wrap;
-    /* Handle smaller screens */
     gap: 16px;
 }
 
@@ -24,7 +22,6 @@
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    /* Circle */
     border: none;
     background-color: transparent;
     cursor: pointer;
@@ -46,21 +43,16 @@
     gap: 12px;
 }
 
-/* Figma Pill/Rounded Style */
 .filter-dropdown,
 .filter-date {
     height: 36px;
     padding: 0 16px;
     border: none;
-    /* No border initially, looks like light gray bg */
     background-color: #F3F4F6;
-    /* Gray-100 */
     border-radius: 6px;
-    /* Slightly rounded */
     font-size: 13px;
     font-weight: 500;
     color: #4B5563;
-    /* Gray-600 */
     cursor: pointer;
     outline: none;
 }
@@ -68,7 +60,6 @@
 .filter-dropdown:hover,
 .filter-date:hover {
     background-color: #E5E7EB;
-    /* Gray-200 */
 }
 
 .filter-date {

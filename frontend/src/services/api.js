@@ -1,9 +1,7 @@
 import axios from 'axios';
 
-// API base URL - uses environment variable for production, localhost for dev
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/transactions';
 
-// fetching transactions with filters, pagination, sorting
 export const fetchTransactions = async (params) => {
     try {
         const response = await axios.get(API_URL, { params });
@@ -14,7 +12,6 @@ export const fetchTransactions = async (params) => {
     }
 };
 
-// fetching filter dropdown options (regions, categories, tags, payment methods)
 export const fetchFilterOptions = async () => {
     try {
         const response = await axios.get(`${API_URL}/options`);
@@ -25,7 +22,6 @@ export const fetchFilterOptions = async () => {
     }
 };
 
-// fetching employee performance data with aggregated stats
 export const fetchEmployeePerformance = async (params) => {
     try {
         const response = await axios.get(`${API_URL}/employees`, { params });

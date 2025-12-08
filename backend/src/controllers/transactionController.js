@@ -1,16 +1,13 @@
 const supabase = require('../config/supabase');
 
-
 const splitFilters = (param) => {
     if (!param) return null;
     if (Array.isArray(param)) return param;
-    // split by comma if it's a string with commas
     return param.includes(',') ? param.split(',') : [param];
 };
 
 exports.getTransactions = async (req, res) => {
     try {
-        // extracting all query params with defaults
         const {
             page = 1,
             limit = 10,
@@ -28,8 +25,6 @@ exports.getTransactions = async (req, res) => {
             endDate
         } = req.query;
 
-        // building the main query with joins to related tables
-        // using supabase's nested select to get customer, product, store, employee data
         let salesQuery = supabase
             .from('sales')
             .select(`
@@ -69,10 +64,8 @@ exports.getTransactions = async (req, res) => {
                 )
             `, { count: 'exact' });
 
-        // my approach: fetch all data and filter/sort/paginate in javascript
-        // this avoids complex supabase nested queries that can fail
         salesQuery = salesQuery.order('date', { ascending: false });
-        salesQuery = salesQuery.range(0, 999); // fetch first 1000 records
+        salesQuery = salesQuery.range(0, 999);
 
         const { data: salesRecords, error: dbErr } = await salesQuery;
 
@@ -81,10 +74,8 @@ exports.getTransactions = async (req, res) => {
             return res.status(500).json({ error: 'Failed to fetch sales data from database' });
         }
 
-        // client-side filtering for all filters
         let filteredRecords = salesRecords || [];
 
-        // search filter - checking both customer name and phone
         if (search) {
             const searchLower = search.toLowerCase();
             filteredRecords = filteredRecords.filter(sale => {
@@ -95,7 +86,6 @@ exports.getTransactions = async (req, res) => {
             });
         }
 
-        // applying filters
         if (customerRegion) {
             const regions = splitFilters(customerRegion);
             filteredRecords = filteredRecords.filter(sale => {
@@ -127,7 +117,6 @@ exports.getTransactions = async (req, res) => {
             });
         }
 
-        // age range filters
         if (minAge) {
             filteredRecords = filteredRecords.filter(sale => {
                 const customer = sale.customers || {};
@@ -142,7 +131,6 @@ exports.getTransactions = async (req, res) => {
             });
         }
 
-        // date range filters
         if (startDate) {
             filteredRecords = filteredRecords.filter(sale => {
                 return sale.date >= startDate;
@@ -155,7 +143,6 @@ exports.getTransactions = async (req, res) => {
             });
         }
 
-        // client-side sorting
         const ascending = sortOrder === 'asc';
 
         if (sortBy === 'customerName') {
@@ -176,17 +163,14 @@ exports.getTransactions = async (req, res) => {
             });
         }
 
-        // get total count after filtering
         const totalCount = filteredRecords.length;
 
-        // apply pagination to filtered results
         const pageNum = parseInt(page);
         const limitNum = parseInt(limit);
         const startIdx = (pageNum - 1) * limitNum;
         const endIdx = startIdx + limitNum;
         const paginatedRecords = filteredRecords.slice(startIdx, endIdx);
 
-        // mapping the database records to frontend format
         const results = paginatedRecords.map(sale => {
             const customer = sale.customers || {};
             const product = sale.products || {};
@@ -224,7 +208,6 @@ exports.getTransactions = async (req, res) => {
             };
         });
 
-        // calculating aggregate stats based on filtered data
         const stats = filteredRecords.reduce((acc, sale) => {
             acc.totalUnits += sale.quantity || 0;
             acc.totalAmount += parseFloat(sale.total_amount) || 0;
@@ -249,38 +232,31 @@ exports.getTransactions = async (req, res) => {
     }
 };
 
-// fetching unique filter options from database for dropdowns
 exports.getFilterOptions = async (req, res) => {
     try {
-        // getting all unique regions from customers table
         const { data: regionData } = await supabase
             .from('customers')
             .select('customer_region')
             .not('customer_region', 'is', null);
 
-        // getting all unique categories from products table
         const { data: categoryData } = await supabase
             .from('products')
             .select('product_category')
             .not('product_category', 'is', null);
 
-        // getting all tags from products (tags is an array field)
         const { data: tagData } = await supabase
             .from('products')
             .select('tags')
             .not('tags', 'is', null);
 
-        // getting all payment methods from sales table
         const { data: paymentData } = await supabase
             .from('sales')
             .select('payment_method')
             .not('payment_method', 'is', null);
 
-        // extracting unique values using Set
         const regions = [...new Set(regionData?.map(r => r.customer_region).filter(Boolean))];
         const categories = [...new Set(categoryData?.map(c => c.product_category).filter(Boolean))];
 
-        // tags need special handling since they're arrays
         let allTags = [];
         if (tagData) {
             tagData.forEach(item => {
@@ -305,7 +281,6 @@ exports.getFilterOptions = async (req, res) => {
     }
 };
 
-// fetching employee performance data with aggregated stats
 exports.getEmployeePerformance = async (req, res) => {
     try {
         const {
@@ -314,7 +289,6 @@ exports.getEmployeePerformance = async (req, res) => {
             search
         } = req.query;
 
-        // fetch all sales with employee data
         let salesQuery = supabase
             .from('sales')
             .select(`
@@ -328,7 +302,7 @@ exports.getEmployeePerformance = async (req, res) => {
             `);
 
         salesQuery = salesQuery.order('salesperson_id', { ascending: true });
-        salesQuery = salesQuery.range(0, 9999); // fetch all records for aggregation
+        salesQuery = salesQuery.range(0, 9999);
 
         const { data: salesRecords, error: dbErr } = await salesQuery;
 
@@ -337,7 +311,6 @@ exports.getEmployeePerformance = async (req, res) => {
             return res.status(500).json({ error: 'Failed to fetch employee data' });
         }
 
-        // aggregate sales by employee
         const employeeMap = {};
 
         salesRecords.forEach(sale => {
@@ -362,10 +335,8 @@ exports.getEmployeePerformance = async (req, res) => {
             employeeMap[empId].totalDiscount += (parseFloat(sale.total_amount) || 0) - (parseFloat(sale.final_amount) || 0);
         });
 
-        // convert map to array
         let employeeList = Object.values(employeeMap);
 
-        // search filter by employee name
         if (search) {
             const searchLower = search.toLowerCase();
             employeeList = employeeList.filter(emp =>
@@ -373,7 +344,6 @@ exports.getEmployeePerformance = async (req, res) => {
             );
         }
 
-        // calculate overall stats from filtered employees
         const stats = employeeList.reduce((acc, emp) => {
             acc.totalUnits += emp.totalUnits;
             acc.totalAmount += emp.totalAmount;
@@ -381,7 +351,6 @@ exports.getEmployeePerformance = async (req, res) => {
             return acc;
         }, { totalUnits: 0, totalAmount: 0, totalDiscount: 0 });
 
-        // pagination
         const pageNum = parseInt(page);
         const limitNum = parseInt(limit);
         const totalCount = employeeList.length;

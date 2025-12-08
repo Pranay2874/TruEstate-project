@@ -11,10 +11,8 @@ import Pagination from './components/Pagination';
 import ViewToggle from './components/ViewToggle';
 
 function App() {
-  // view state - customer or employee
   const [activeView, setActiveView] = useState('customer');
 
-  // state management for sales data and UI
   const [salesData, setSalesData] = useState([]);
   const [employeeData, setEmployeeData] = useState([]);
   const [stats, setStats] = useState({ totalUnits: 0, totalAmount: 0, totalDiscount: 0 });
@@ -25,7 +23,6 @@ function App() {
   const [filters, setFilters] = useState({});
   const [sort, setSort] = useState({ sortBy: 'date', sortOrder: 'desc' });
 
-  // loading customer data from API
   const loadCustomerData = async () => {
     setIsFetching(true);
     try {
@@ -40,7 +37,6 @@ function App() {
       const result = await fetchTransactions(params);
       setSalesData(result.data);
       setPagination(result.pagination);
-      // no stats for customer view
       setStats({ totalUnits: 0, totalAmount: 0, totalDiscount: 0 });
     } catch (err) {
       console.error('Failed to load sales data:', err);
@@ -49,7 +45,6 @@ function App() {
     }
   };
 
-  // loading employee performance data
   const loadEmployeeData = async () => {
     setIsFetching(true);
     try {
@@ -61,7 +56,6 @@ function App() {
       const result = await fetchEmployeePerformance(params);
       setEmployeeData(result.data);
       setPagination(result.pagination);
-      // stats for employee view
       if (result.stats) {
         setStats(result.stats);
       }
@@ -72,7 +66,6 @@ function App() {
     }
   };
 
-  // reload data based on active view
   useEffect(() => {
     if (activeView === 'customer') {
       loadCustomerData();
@@ -81,7 +74,6 @@ function App() {
     }
   }, [pagination.page, search, filters, sort, activeView]);
 
-  // handle view change
   const handleViewChange = (newView) => {
     setActiveView(newView);
     setSearch('');
@@ -118,10 +110,8 @@ function App() {
 
           <ViewToggle activeView={activeView} onViewChange={handleViewChange} />
 
-          {/* Show stats only in employee view */}
           {activeView === 'employee' && <StatsRow stats={stats} />}
 
-          {/* Show filters only in customer view */}
           {activeView === 'customer' && (
             <FilterPanel
               onFilter={handleFilterChange}
@@ -129,7 +119,6 @@ function App() {
             />
           )}
 
-          {/* Conditional table rendering */}
           {activeView === 'customer' ? (
             <TransactionTable
               data={salesData}

@@ -5,8 +5,6 @@ import SearchIcon from '../icons/SearchIcon';
 const Header = ({ user, onSearch }) => {
     const [query, setQuery] = React.useState('');
 
-    // debouncing search input - waiting 500ms after user stops typing
-    // this prevents too many API calls while user is typing
     React.useEffect(() => {
         const delayDebounceFn = setTimeout(() => {
             if (onSearch) onSearch(query);
