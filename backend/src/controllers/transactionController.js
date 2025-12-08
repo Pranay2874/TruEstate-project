@@ -201,36 +201,45 @@ exports.getTransactions = async (req, res) => {
 
 exports.getFilterOptions = async (req, res) => {
     try {
+        console.log('Fetching filter options...');
+        // Note: Supabase API has a max row limit (often 1000). 
+        // For production with >1k rows, we should use RPC "distinct" functions or recursive fetching.
+        // attempting larger range, but might be capped by server policies.
         const [
-            { data: regionData },
-            { data: categoryData },
-            { data: tagData },
-            { data: paymentData }
+            { data: regionData, error: regionError },
+            { data: categoryData, error: categoryError },
+            { data: tagData, error: tagError },
+            { data: paymentData, error: paymentError }
         ] = await Promise.all([
             supabase
                 .from('customers')
                 .select('customer_region')
                 .not('customer_region', 'is', null)
-                .range(0, 99999),
+                .range(0, 4999), // Increased sample size
             supabase
                 .from('products')
                 .select('product_category')
                 .not('product_category', 'is', null)
-                .range(0, 99999),
+                .range(0, 4999),
             supabase
                 .from('products')
                 .select('tags')
                 .not('tags', 'is', null)
-                .range(0, 99999),
+                .range(0, 4999),
             supabase
                 .from('sales')
                 .select('payment_method')
                 .not('payment_method', 'is', null)
-                .range(0, 99999)
+                .range(0, 4999)
         ]);
 
-        const regions = [...new Set(regionData?.map(r => r.customer_region).filter(Boolean))];
-        const categories = [...new Set(categoryData?.map(c => c.product_category).filter(Boolean))];
+        if (regionError) console.error('Region fetch error:', regionError);
+        if (categoryError) console.error('Category fetch error:', categoryError);
+        if (tagError) console.error('Tag fetch error:', tagError);
+        if (paymentError) console.error('Payment fetch error:', paymentError);
+
+        const regions = [...new Set(regionData?.map(r => r.customer_region).filter(Boolean))].sort();
+        const categories = [...new Set(categoryData?.map(c => c.product_category).filter(Boolean))].sort();
 
         let allTags = [];
         if (tagData) {
@@ -240,9 +249,11 @@ exports.getFilterOptions = async (req, res) => {
                 }
             });
         }
-        const tags = [...new Set(allTags.filter(Boolean))];
+        const tags = [...new Set(allTags.filter(Boolean))].sort();
 
-        const paymentMethods = [...new Set(paymentData?.map(p => p.payment_method).filter(Boolean))];
+        const paymentMethods = [...new Set(paymentData?.map(p => p.payment_method).filter(Boolean))].sort();
+
+        console.log(`Loaded options: Regions(${regions.length}), Categories(${categories.length}), Tags(${tags.length})`);
 
         res.json({
             regions,

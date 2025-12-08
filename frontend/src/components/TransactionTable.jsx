@@ -37,15 +37,19 @@ const TransactionTable = ({ data, loading }) => {
                                     {transaction.phoneNumber}
                                 </div>
                             </td>
-                            <td>{transaction.gender}</td>
+                            <td>
+                                <div className="gender-cell" style={{ textTransform: 'capitalize' }}>
+                                    {transaction.gender}
+                                </div>
+                            </td>
                             <td>{transaction.age}</td>
                             <td className="font-medium text-dark">{transaction.productCategory}</td>
                             <td className="text-center bold">{transaction.quantity}</td>
                             <td className="font-medium">{formatCurrency(transaction.totalAmount)}</td>
 
                             <td className="font-medium text-dark">{transaction.customerRegion}</td>
-                            <td>{transaction.productId || 'PROD0001'}</td>
-                            <td className="font-medium text-dark">{transaction.employeeName || 'Harsh Agrawal'}</td>
+                            <td>{transaction.productId || '---'}</td>
+                            <td className="font-medium text-dark">{transaction.employeeName || 'Unknown'}</td>
                         </tr>
                     ))}
                 </tbody>
