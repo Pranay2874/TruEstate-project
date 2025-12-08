@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api/transactions';
+const API_URL = 'https://truestate-project-zled.onrender.com/api/transactions';
 
 export const fetchTransactions = async (params) => {
     try {
