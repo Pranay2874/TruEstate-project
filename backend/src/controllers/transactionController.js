@@ -25,9 +25,7 @@ exports.getTransactions = async (req, res) => {
             endDate
         } = req.query;
 
-        // Base query with joins
-        // We use !inner for joins where we might want to filter, to ensure records match
-        // default to left join if no strict filter needed, but !inner is safer for 'search' on relations
+
         let query = supabase
             .from('sales')
             .select(`
@@ -67,13 +65,13 @@ exports.getTransactions = async (req, res) => {
                 )
             `, { count: 'exact' });
 
-        // Apply Search (Server-side)
+
         if (search) {
-            // Searching on joined customer name
+
             query = query.ilike('customers.customer_name', `%${search}%`);
         }
 
-        // Apply Filters (Server-side)
+
         if (customerRegion) {
             const regions = splitFilters(customerRegion);
             query = query.in('customers.customer_region', regions);
@@ -94,6 +92,12 @@ exports.getTransactions = async (req, res) => {
             query = query.in('payment_method', methods);
         }
 
+        if (tags) {
+            const tagList = splitFilters(tags);
+            // Assuming DB column is an array. 'ov' stands for overlaps (arrays have common elements).
+            query = query.overlaps('products.tags', tagList);
+        }
+
         if (minAge) {
             query = query.gte('customers.age', parseInt(minAge));
         }
@@ -110,19 +114,19 @@ exports.getTransactions = async (req, res) => {
             query = query.lte('date', endDate);
         }
 
-        // Apply Sorting
+
         if (sortBy === 'date') {
             query = query.order('date', { ascending: sortOrder === 'asc' });
         } else if (sortBy === 'quantity') {
             query = query.order('quantity', { ascending: sortOrder === 'asc' });
         } else if (sortBy === 'customerName') {
-            // Sorting by foreign table column
+
             query = query.order('customer_name', { foreignTable: 'customers', ascending: sortOrder === 'asc' });
         } else {
             query = query.order('date', { ascending: false });
         }
 
-        // Apply Pagination
+
         const pageNum = parseInt(page) || 1;
         const limitNum = parseInt(limit) || 10;
         const from = (pageNum - 1) * limitNum;
@@ -174,10 +178,10 @@ exports.getTransactions = async (req, res) => {
             };
         });
 
-        // Determine pagination
+
         const totalCount = count || 0;
 
-        // Return results (stats omitted for performance on large dataset listing)
+
         res.json({
             data: results,
             pagination: {
@@ -197,25 +201,33 @@ exports.getTransactions = async (req, res) => {
 
 exports.getFilterOptions = async (req, res) => {
     try {
-        const { data: regionData } = await supabase
-            .from('customers')
-            .select('customer_region')
-            .not('customer_region', 'is', null);
-
-        const { data: categoryData } = await supabase
-            .from('products')
-            .select('product_category')
-            .not('product_category', 'is', null);
-
-        const { data: tagData } = await supabase
-            .from('products')
-            .select('tags')
-            .not('tags', 'is', null);
-
-        const { data: paymentData } = await supabase
-            .from('sales')
-            .select('payment_method')
-            .not('payment_method', 'is', null);
+        const [
+            { data: regionData },
+            { data: categoryData },
+            { data: tagData },
+            { data: paymentData }
+        ] = await Promise.all([
+            supabase
+                .from('customers')
+                .select('customer_region')
+                .not('customer_region', 'is', null)
+                .range(0, 99999),
+            supabase
+                .from('products')
+                .select('product_category')
+                .not('product_category', 'is', null)
+                .range(0, 99999),
+            supabase
+                .from('products')
+                .select('tags')
+                .not('tags', 'is', null)
+                .range(0, 99999),
+            supabase
+                .from('sales')
+                .select('payment_method')
+                .not('payment_method', 'is', null)
+                .range(0, 99999)
+        ]);
 
         const regions = [...new Set(regionData?.map(r => r.customer_region).filter(Boolean))];
         const categories = [...new Set(categoryData?.map(c => c.product_category).filter(Boolean))];

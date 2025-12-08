@@ -87,7 +87,7 @@ function App() {
   }, []);
 
   const handleFilterChange = React.useCallback((newFilters) => {
-    setFilters(prev => ({ ...prev, ...newFilters }));
+    setFilters(newFilters);
     setPagination(prev => ({ ...prev, page: 1 }));
   }, []);
 
