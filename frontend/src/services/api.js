@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// API base URL - pointing to local backend for testing
-const API_URL = 'http://localhost:5000/api/transactions';
+// API base URL - uses environment variable for production, localhost for dev
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/transactions';
 
 // fetching transactions with filters, pagination, sorting
 export const fetchTransactions = async (params) => {
