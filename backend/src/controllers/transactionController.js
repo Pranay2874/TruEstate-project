@@ -232,10 +232,9 @@ exports.getFilterOptions = async (req, res) => {
         if (salesData) salesData.forEach(s => s.payment_method && paymentMethods.add(s.payment_method));
 
 
-        // FALLBACK: If DB is empty or restricted, populate with standard values
-        if (regions.size === 0) {
-            ["East", "West", "North", "South", "Central"].forEach(r => regions.add(r));
-        }
+        // ALWAYS ensure standard options are present (Merge with DB results)
+        ["East", "West", "North", "South", "Central"].forEach(r => regions.add(r));
+
         if (categories.size === 0) {
             ["Electronics", "Clothing", "Home", "Books", "Beauty", "Sports"].forEach(c => categories.add(c));
         }
